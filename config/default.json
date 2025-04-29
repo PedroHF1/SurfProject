@@ -1,18 +1,18 @@
 {
-    "App": {
-        "port": 3000,
-        "database": {
-            "mongoUrl": "do-not-hard-code"
-        },
-        "resources": {
-            "StormGlass": {
-                "apiUrl": "https://api.stormglass.io/v2",
-                "apiToken": "do-not-hard-code"
-            } 
-        },
-        "logger": {
-            "enabled": true,
-            "level": "info"
-        }
+  "App": {
+    "port": 3000,
+    "database": {
+      "mongoUrl": ""
+    },
+    "resources": {
+      "StormGlass": {
+        "apiUrl": "",
+        "apiToken": "do-not-hard-code"
+      }
+    },
+    "logger": {
+      "enabled": true,
+      "level": "info"
     }
+  }
 }
