@@ -38,7 +38,7 @@ const schema = new mongoose.Schema<User>(
 schema.path('email').validate(async(email: string) => {
   const emailCount = await mongoose.models.User.countDocuments({ email });
   return !emailCount;
-}, 'already exists in the database.', CUSTOM_VALIDATION.DUPLICATED);
+}, 'is already registered.', CUSTOM_VALIDATION.DUPLICATED);
 
 schema.pre('save', async function(): Promise<void> {
   if(!this.password || !this.isModified('password')) {

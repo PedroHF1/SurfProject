@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from "express";
 
 export function authMiddleware(req: Partial<Request>, res: Partial<Response>, next: NextFunction): void {
     try {
-        const token = req.headers?.['x-access-token'];
+        const token = req.headers?.authorization?.split('Bearer ')[1];
         const decoded = AuthService.decodeToken(token as string);
         req.decoded = decoded;
         next();
