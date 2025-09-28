@@ -81,14 +81,14 @@ export class StormGlass {
     const endTimeStamp = TimeUtil.getUnixTimeForAFutureDay(1);
     try {
       const response = await this.request.get<StormGlassForecastResponse>(
-        `${stormglassResourceConfig.get(
+        `${process.env.STORMGLASS_URL || stormglassResourceConfig.get(
           'apiUrl'
         )}/weather/point?lat=${lat}&lng=${lng}&params=${
           this.stormGlassAPIParams
         }&source=${this.stormGlassAPISource}&end=${endTimeStamp}`,
         {
           headers: {
-            Authorization: stormglassResourceConfig.get('apiToken'),
+            Authorization: process.env.STORMGLASS_TOKEN || stormglassResourceConfig.get('apiToken'),
           },
         }
       );
