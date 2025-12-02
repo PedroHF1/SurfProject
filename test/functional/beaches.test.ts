@@ -28,10 +28,9 @@ describe('Beaches functional tests', () => {
 
       const response = await global.testRequest
         .post('/beaches')
-        .set({ 'x-access-token': token })
+        .set({ authorization: `Bearer ${token}` })
         .send(newBeach);
       expect(response.status).toBe(201);
-      //Object containing matches the keys and values, even if includes other keys such as id.
       expect(response.body).toEqual(expect.objectContaining(newBeach));
     });
 
@@ -44,20 +43,18 @@ describe('Beaches functional tests', () => {
       };
       const response = await global.testRequest
         .post('/beaches')
-        .set({ 'x-access-token': token })
+        .set({ authorization: `Bearer ${token}` })
         .send(newBeach);
 
-      //tests will be broken, not middleware
       expect(response.status).toBe(400);
       expect(response.body).toEqual({
         code: 400,
         error: 'Bad Request',
-        message: 'request.body.lat should be number',
+        message: 'O campo lat tem um formato inválido',
       });
     });
 
     it.skip('should return 500 when there is any error other than validation error', async () => {
-      //TODO think in a way to throw a 500
     });
   });
 });

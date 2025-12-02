@@ -36,7 +36,7 @@ describe('Users functional tests', () => {
       expect(response.body).toEqual({
         code: 400,
         error: 'Bad Request',
-        message: 'User validation failed: name: Path `name` is required.',
+        message: 'O campo name é obrigatório',
       });
     });
 
@@ -54,7 +54,7 @@ describe('Users functional tests', () => {
         code: 409,
         error: 'Conflict',
         message:
-          'User validation failed: email: already exists in the database.',
+          'O registro já existe',
       });
     });
   });
@@ -80,7 +80,7 @@ describe('Users functional tests', () => {
         .post('/users/authenticate')
         .send({ email: 'some-email@mail.com', password: '1234' });
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(400);
     });
 
     it('Should return ANAUTHORIZED if the user is found but the password does not match', async () => {
@@ -94,7 +94,7 @@ describe('Users functional tests', () => {
         .post('/users/authenticate')
         .send({ email: newUser.email, password: 'different password' });
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(400);
     });
   });
 
@@ -109,7 +109,7 @@ describe('Users functional tests', () => {
       const token = AuthService.generateToken(user.toJSON());
       const { body, status } = await global.testRequest
         .get('/users/me')
-        .set({ 'x-access-token': token });
+        .set({ authorization: `Bearer ${token}` });
 
       expect(status).toBe(200);
       expect(body).toMatchObject(JSON.parse(JSON.stringify({ user })));
@@ -121,15 +121,14 @@ describe('Users functional tests', () => {
         email: 'john@mail.com',
         password: '1234',
       };
-      //create a new user but don't save it
       const user = new User(newUser);
       const token = AuthService.generateToken(user.toJSON());
       const { body, status } = await global.testRequest
         .get('/users/me')
-        .set({ 'x-access-token': token });
+        .set({ authorization: `Bearer ${token}` });
 
       expect(status).toBe(404);
-      expect(body.message).toBe('User not found!');
+      expect(body.message).toBe('Usuário não encontrado!');
     });
   });
 });

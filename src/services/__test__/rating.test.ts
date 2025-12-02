@@ -34,7 +34,6 @@ describe('Rating Service', () => {
             const pointData = {
               swellHeight: 0.4,
             };
-            // using spread operator for cloning objects instead of Object.assign
             const point = { ...defaultPoint, ...pointData };
       
             const rating = defaultRating.getRateForPoint(point);

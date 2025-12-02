@@ -44,9 +44,8 @@ describe('Beach forecast functional tests', () => {
       })
       .reply(200, stormGlassWeather3HoursFixture);
 
-    const { body, status } = await global.testRequest.get('/forecast').set({'x-access-token': token});
+    const { body, status } = await global.testRequest.get('/forecast').set({ authorization: `Bearer ${token}` });
     expect(status).toBe(200);
-    // Make sure we use toEqual to check value not the object and array itself
     expect(body).toEqual(apiForecastResponse1BeachFixture);
   });
 
@@ -62,7 +61,7 @@ describe('Beach forecast functional tests', () => {
       .query({ lat: '-33.792726', lng: '151.289824' })
       .replyWithError('Something went wrong');
 
-    const { status } = await global.testRequest.get(`/forecast`).set({'x-access-token': token});
+    const { status } = await global.testRequest.get(`/forecast`).set({ authorization: `Bearer ${token}` });
 
     expect(status).toBe(500);
   });
