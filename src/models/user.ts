@@ -42,7 +42,7 @@ const schema = new mongoose.Schema<User>(
   {
     timestamps: true,
     toJSON: {
-      transform: (_, ret): void => {
+      transform: (_, ret: { _id?: unknown; id?: unknown; __v?: number }): void => {
         ret.id = ret._id;
         delete ret._id;
         delete ret.__v;
