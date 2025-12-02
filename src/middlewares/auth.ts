@@ -11,7 +11,7 @@ export function authMiddleware(req: Partial<Request>, res: Partial<Response>, ne
         if(err instanceof Error) {
             res.status?.(401).send({ code: 401, error: err.message })
         } else {
-            res.status?.(401).send({ code: 401, error: 'Unknown auth error' })
+            res.status?.(401).send({ code: 401, error: 'Erro de autenticação desconhecido' })
         }
     }
 } 

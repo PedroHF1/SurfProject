@@ -7,6 +7,11 @@ export interface User {
   name: string;
   email: string;
   password: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
 }
 
 export enum CUSTOM_VALIDATION {
@@ -22,8 +27,20 @@ const schema = new mongoose.Schema<User>(
       unique: true,
     },
     password: { type: String, required: true },
+    address: { type: String, required: false },
+    city: { type: String, required: false },
+    state: { type: String, required: false },
+    passwordResetToken: {
+      type: String,
+      select: false,
+    },
+    passwordResetExpires: {
+      type: Date,
+      select: false,
+    },
   },
   {
+    timestamps: true,
     toJSON: {
       transform: (_, ret): void => {
         ret.id = ret._id;
@@ -34,10 +51,12 @@ const schema = new mongoose.Schema<User>(
   }
 );
 
-/* Validates the email and throws a validation error, otherwise it will throw a 500 */
-schema.path('email').validate(async(email: string) => {
-  const emailCount = await mongoose.models.User.countDocuments({ email });
-  return !emailCount;
+schema.path('email').validate(async function (email: string) {
+  const user = await mongoose.models.User.findOne({ email });
+  if (user && !user._id.equals(this._id)) {
+    return false;
+  }
+  return true;
 }, 'is already registered.', CUSTOM_VALIDATION.DUPLICATED);
 
 schema.pre('save', async function(): Promise<void> {
