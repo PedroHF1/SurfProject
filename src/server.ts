@@ -13,28 +13,24 @@ import { ForecastController } from './controllers/forecast';
 import * as database from '@src/database';
 import { BeachesController } from './controllers/beaches';
 import { UsersController } from './controllers/users';
+import { DashboardController } from './controllers/dashboard';
 import logger from './logger';
 import { apiErrorValidator } from './middlewares/api-error-validator';
+import { cacheClient } from './cache';
 
 export class SetupServer extends Server {
   private server?: http.Server;
-  /*
-   * same as this.port = port, declaring as private here will
-   * add the port variable to the SetupServer instance
-   */
+
   constructor(private port = 3000) {
     super();
   }
 
-  /*
-   * We use a different method to init instead of using the constructor
-   * this way we allow the server to be used in tests and normal initialization
-   */
   public async init(): Promise<void> {
     this.setupExpress();
-    await this.docsSetup();
     this.setupControllers();
+    await this.docsSetup();
     await this.databaseSetup();
+    await this.cacheSetup();
     this.setupErrorHandlers();
   }
 
@@ -60,10 +56,12 @@ export class SetupServer extends Server {
     const forecastController = new ForecastController();
     const beachesController = new BeachesController();
     const usersController = new UsersController();
+    const dashboardController = new DashboardController();
     this.addControllers([
       forecastController,
       beachesController,
       usersController,
+      dashboardController,
     ]);
   }
 
@@ -71,8 +69,8 @@ export class SetupServer extends Server {
     this.app.use('/docs', swaggerUi.serve, swaggerUi.setup(apiSchema));
     this.app.use(OpenApiValidator.middleware({
       apiSpec: apiSchema as OpenAPIV3.Document,
-      validateRequests: false, //will be implemented in step2
-      validateResponses: false, //will be implemented in step2
+      validateRequests: false, 
+      validateResponses: false, 
     }));
   }
 
@@ -84,8 +82,17 @@ export class SetupServer extends Server {
     await database.connect();
   }
 
+  private async cacheSetup(): Promise<void> {
+    try {
+      await cacheClient.connect();
+    } catch (error) {
+      logger.error('Failed to connect to Redis cache. Continuing without cache.');
+    }
+  }
+
   public async close(): Promise<void> {
     await database.close();
+    await cacheClient.disconnect();
     if (this.server) {
       await new Promise((resolve, reject) => {
         this.server?.close((err) => {
