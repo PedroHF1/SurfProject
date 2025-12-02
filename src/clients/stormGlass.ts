@@ -1,6 +1,5 @@
 import { InternalError } from '@src/util/errors/internal-error';
 import config, { IConfig } from 'config';
-// Another way to have similar behaviour to TS namespaces
 import * as HTTPUtil from '@src/util/request';
 import { TimeUtil } from '@src/util/time';
 
@@ -34,19 +33,13 @@ export interface ForecastPoint {
   windSpeed: number;
 }
 
-/**
- * This error type is used when a request reaches out to the StormGlass API but returns an error
- */
+
 export class StormGlassUnexpectedResponseError extends InternalError {
   constructor(message: string) {
     super(message);
   }
 }
 
-/**
- * This error type is used when something breaks before the request reaches out to the StormGlass API
- * eg: Network error, or request validation error
- */
 export class ClientRequestError extends InternalError {
   constructor(message: string) {
     const internalMessage =
@@ -63,9 +56,6 @@ export class StormGlassResponseError extends InternalError {
   }
 }
 
-/**
- * We could have proper type for the configuration
- */
 const stormglassResourceConfig: IConfig = config.get(
   'App.resources.StormGlass'
 );
@@ -94,17 +84,12 @@ export class StormGlass {
       );
       return this.normalizeResponse(response.data);
     } catch (err) {
-      //@Updated 2022 to support Error as unknown
-      //https://devblogs.microsoft.com/typescript/announcing-typescript-4-4/#use-unknown-catch-variables
       if (err instanceof Error && HTTPUtil.Request.isRequestError(err)) {
         const error = HTTPUtil.Request.extractErrorData(err);
         throw new StormGlassResponseError(
           `Error: ${JSON.stringify(error.data)} Code: ${error.status}`
         );
       }
-      /**
-       * All the other errors will fallback to a generic client error
-       */
       throw new ClientRequestError(JSON.stringify(err));
     }
   }

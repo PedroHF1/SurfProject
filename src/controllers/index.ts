@@ -20,9 +20,18 @@ export abstract class BaseController {
             (err) => err.kind === CUSTOM_VALIDATION.DUPLICATED
         );   
         if(duplicatedKindErrors.length) {
-            return { code: 409, error: error.message };
+            return { code: 409, error: 'O registro já existe' };
         } else {
-            return { code: 400, error: error.message };
+            const errors = Object.values(error.errors).map((err) => {
+                if (err.kind === 'required') {
+                    return `O campo ${err.path} é obrigatório`;
+                }
+                if (err.name === 'CastError') {
+                    return `O campo ${err.path} tem um formato inválido`;
+                }
+                return err.message;
+            });
+            return { code: 400, error: errors.join(', ') };
         }
     }
 

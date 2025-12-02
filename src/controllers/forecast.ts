@@ -7,6 +7,7 @@ import logger from '@src/logger';
 import { BaseController } from '.';
 import rateLimit from 'express-rate-limit';
 import ApiError from '@src/util/errors/api-error';
+import { cacheClient } from '@src/cache';
 
 const forecast = new Forecast();
 
@@ -20,7 +21,7 @@ const rateLimiter = rateLimit({
     return '';
   },
   handler(_, res: Response): void {
-    res.status(429).send(ApiError.format({code: 429, message: 'Too many requests to the /forecast endpoint'}))
+    res.status(429).send(ApiError.format({code: 429, message: 'Muitas requisições para o endpoint /forecast'}))
   }
 });
 
@@ -34,12 +35,40 @@ export class ForecastController extends BaseController {
     res: Response
   ): Promise<void> {
     try {
-      const beaches = await Beach.find({ user: req.decoded?.id });
+      const userId = req.decoded?.id;
+      if (!userId) {
+        this.sendErrorResponse(res, { code: 401, message: 'Não autorizado' });
+        return;
+      }
+
+      const cacheKey = `forecast:${userId}`;
+
+      try {
+        const cachedData = await cacheClient.get(cacheKey);
+        if (cachedData) {
+          logger.info(`Cache hit for user ${userId}`);
+          res.status(200).send(JSON.parse(cachedData));
+          return;
+        }
+      } catch (cacheError) {
+        logger.debug('Cache get failed, fetching fresh data', cacheError);
+      }
+
+      logger.info(`Cache miss for user ${userId}`);
+      const beaches = await Beach.find({ user: userId });
       const forecastData = await forecast.processForecastForBeaches(beaches);
+
+      try {
+        await cacheClient.set(cacheKey, JSON.stringify(forecastData), 172800);
+        logger.info(`Cached forecast data for user ${userId}`);
+      } catch (cacheError) {
+        logger.debug('Cache set failed, continuing without cache', cacheError);
+      }
+
       res.status(200).send(forecastData);
     } catch (error) {
       logger.error(error);
-      this.sendErrorResponse(res, { code: 500, message: 'Something went wrong' });
+      this.sendErrorResponse(res, { code: 500, message: 'Algo deu errado' });
     }
   }
 }

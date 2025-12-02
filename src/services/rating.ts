@@ -1,7 +1,6 @@
 import { ForecastPoint } from "@src/clients/stormGlass";
 import { Beach, GeoPosition } from "@src/models/beach";
 
-// meters
 const waveHeights = {
     ankleToKnee: {
         min: 0.3,
