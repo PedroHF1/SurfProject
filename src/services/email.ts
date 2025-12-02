@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-// import config from 'config';
+import config from 'config';
 import logger from '@src/logger';
 
 export class EmailService {
@@ -10,13 +10,13 @@ export class EmailService {
 
     try {
       const transporter = nodemailer.createTransport({
-        service: process.env.EMAIL_SERVICE,
-        host: process.env.EMAIL_HOST, 
-        port: Number(process.env.EMAIL_PORT),
+        service: 'gmail',
+        host: process.env.EMAIL_HOST || config.get('email.host'), 
+        port: 587,
         secure: false,
         auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
+          user: process.env.EMAIL_USER || config.get('email.user'),
+          pass: process.env.EMAIL_PASS || config.get('email.pass'),
         },
       });
 
